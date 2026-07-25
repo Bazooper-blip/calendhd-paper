@@ -1,0 +1,7 @@
+configuration:
+  app_url:
+    name: Application URL
+    description: The URL your TRMNL device and browsers use to reach this server — set it to http://<your-HA-IP>:4567 (TRMNL firmware may not resolve .local mDNS names). Generated screen image links are built from this, so a wrong value shows as broken/blank screens on the device.
+  registration_enabled:
+    name: Allow account registration
+    description: Leave on for the first start to create your admin account in the web UI, then turn it off and restart the add-on so nobody else on your network can register.
