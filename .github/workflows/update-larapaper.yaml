@@ -1,0 +1,112 @@
+name: Update larapaper
+
+# Watches usetrmnl/larapaper releases and ships version bumps automatically:
+# detect -> verify the ghcr image exists -> edit the pins -> build the add-on
+# for both arches against the new base -> open a PR -> merge it.
+#
+# The in-run build is the merge gate. PRs opened with the workflow's
+# GITHUB_TOKEN do not trigger pull_request workflows (GitHub's recursion
+# prevention), so ci.yaml never runs on these PRs — validation MUST happen
+# here, before the merge step. If this repo ever adds branch protection with
+# required checks, switch the checkout + create-pull-request steps to a PAT
+# or GitHub App token, or the merge will wait on checks that never report.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: update-larapaper
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect current and latest versions
+        id: versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          current=$(grep -m1 -o 'larapaper:[0-9][^"[:space:]]*' calendhd-paper/build.yaml | cut -d: -f2)
+          latest=$(gh api repos/usetrmnl/larapaper/releases/latest --jq .tag_name)
+          latest=${latest#v}
+          echo "current=$current" >> "$GITHUB_OUTPUT"
+          echo "latest=$latest" >> "$GITHUB_OUTPUT"
+          echo "current=$current latest=$latest"
+
+      # A release tag can exist minutes-to-hours before the multi-arch image
+      # lands on ghcr. Skip quietly and let the next scheduled run pick it up.
+      - name: Verify the ghcr image is published for both arches
+        id: manifest
+        if: steps.versions.outputs.current != steps.versions.outputs.latest
+        run: |
+          tag="ghcr.io/usetrmnl/larapaper:${{ steps.versions.outputs.latest }}"
+          if docker manifest inspect "$tag" > manifest.json 2>&1; then
+            if grep -q '"architecture": *"amd64"' manifest.json && grep -q '"architecture": *"arm64"' manifest.json; then
+              echo "ok=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "::warning::$tag exists but lacks amd64/arm64 — retrying next run"
+              echo "ok=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "::warning::release tagged but $tag not on ghcr yet — retrying next run"
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Apply version bump
+        id: bump
+        if: steps.manifest.outputs.ok == 'true'
+        run: |
+          addon_version=$(python3 .github/scripts/bump-larapaper.py "${{ steps.versions.outputs.latest }}")
+          echo "addon_version=$addon_version" >> "$GITHUB_OUTPUT"
+          git diff --stat
+
+      - uses: docker/setup-qemu-action@v3
+        if: steps.manifest.outputs.ok == 'true'
+      - uses: docker/setup-buildx-action@v3
+        if: steps.manifest.outputs.ok == 'true'
+
+      - name: Build the add-on against the new base (merge gate)
+        if: steps.manifest.outputs.ok == 'true'
+        run: |
+          for platform in linux/amd64 linux/arm64; do
+            docker buildx build --platform "$platform" \
+              --build-arg "BUILD_FROM=ghcr.io/usetrmnl/larapaper:${{ steps.versions.outputs.latest }}" \
+              calendhd-paper
+          done
+
+      - name: Create pull request
+        id: cpr
+        if: steps.manifest.outputs.ok == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: bump/larapaper-${{ steps.versions.outputs.latest }}
+          delete-branch: true
+          commit-message: "chore: bump larapaper to ${{ steps.versions.outputs.latest }} (add-on ${{ steps.bump.outputs.addon_version }})"
+          title: "Bump larapaper to ${{ steps.versions.outputs.latest }}"
+          body: |
+            Automated bump: larapaper ${{ steps.versions.outputs.current }} → **${{ steps.versions.outputs.latest }}** (add-on ${{ steps.bump.outputs.addon_version }}).
+
+            - [Upstream release notes](https://github.com/usetrmnl/larapaper/releases/tag/${{ steps.versions.outputs.latest }})
+            - ghcr manifest verified for amd64 + arm64
+            - Add-on image built for both arches against the new base in [this run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Merge
+        if: steps.cpr.outputs.pull-request-number
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr="${{ steps.cpr.outputs.pull-request-number }}"
+          # Immediate squash merge — the build above already gated this run.
+          # Fallback to --auto in case branch protection is added later
+          # (see the header comment about tokens before relying on it).
+          gh pr merge --squash --delete-branch "$pr" \
+            || gh pr merge --auto --squash --delete-branch "$pr"
