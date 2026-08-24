@@ -1,4 +1,4 @@
-ARG BUILD_FROM=ghcr.io/usetrmnl/larapaper:0.39.0
+ARG BUILD_FROM=ghcr.io/usetrmnl/larapaper:0.40.0
 FROM ${BUILD_FROM}
 
 # The upstream image runs unprivileged (www-data), but the add-on's entrypoint

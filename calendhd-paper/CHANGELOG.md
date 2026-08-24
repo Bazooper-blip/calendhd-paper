@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+- Update larapaper to 0.40.0 ([release notes](https://github.com/usetrmnl/larapaper/releases/tag/0.40.0)).
+
 ## 1.0.0
 
 - Initial release: [larapaper](https://github.com/usetrmnl/larapaper) **0.39.0** packaged as a Home Assistant add-on (`amd64` + `aarch64`, tracking the upstream image's published architectures).
