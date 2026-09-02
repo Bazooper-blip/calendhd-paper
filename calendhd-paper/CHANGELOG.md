@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+- Update larapaper to 0.41.0 ([release notes](https://github.com/usetrmnl/larapaper/releases/tag/0.41.0)).
+
 ## 1.1.0
 
 - Update larapaper to 0.40.0 ([release notes](https://github.com/usetrmnl/larapaper/releases/tag/0.40.0)).

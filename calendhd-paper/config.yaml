@@ -1,5 +1,5 @@
 name: calenDHD Paper
-version: "1.1.0"
+version: "1.2.0"
 slug: calendhd_paper
 description: "Self-hosted TRMNL server (larapaper BYOS) — run your calenDHD e-ink dashboard fully on your LAN"
 url: "https://github.com/Bazooper-blip/calendhd-paper"

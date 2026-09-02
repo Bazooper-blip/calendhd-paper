@@ -3,8 +3,8 @@
 # Bump the tag here (both arches) to ship a new larapaper version, and record
 # it in CHANGELOG.md.
 build_from:
-  aarch64: ghcr.io/usetrmnl/larapaper:0.40.0
-  amd64: ghcr.io/usetrmnl/larapaper:0.40.0
+  aarch64: ghcr.io/usetrmnl/larapaper:0.41.0
+  amd64: ghcr.io/usetrmnl/larapaper:0.41.0
 labels:
   org.opencontainers.image.title: "calenDHD Paper"
   org.opencontainers.image.description: "larapaper TRMNL BYOS server as a Home Assistant add-on"

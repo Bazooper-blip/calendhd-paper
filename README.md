@@ -17,7 +17,7 @@ TRMNL device ──HTTP──▶ calenDHD Paper add-on (:4567, larapaper)
 
 | Add-on | Description |
 |--------|-------------|
-| [calenDHD Paper](calendhd-paper/) | larapaper 0.39.x BYOS server (`amd64`/`aarch64`); pairs with the calenDHD add-on's TRMNL feed, and works as a general TRMNL server (community recipes, screenshots, mashups, TRMNL OG + X) |
+| [calenDHD Paper](calendhd-paper/) | larapaper 0.41.x BYOS server (`amd64`/`aarch64`); pairs with the calenDHD add-on's TRMNL feed, and works as a general TRMNL server (community recipes, screenshots, mashups, TRMNL OG + X) |
 
 Setup walkthrough — including connecting the device (firmware 1.4.6+ "Custom Server") and adding the calenDHD dashboard recipe — is in the add-on's [DOCS.md](calendhd-paper/DOCS.md).
 
