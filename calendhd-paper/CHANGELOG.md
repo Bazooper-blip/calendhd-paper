@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.12.0
+
+- Update larapaper to 0.49.0 ([release notes](https://github.com/usetrmnl/larapaper/releases/tag/0.49.0)).
+
 ## 1.11.0
 
 - Update larapaper to 0.48.0 ([release notes](https://github.com/usetrmnl/larapaper/releases/tag/0.48.0)).
